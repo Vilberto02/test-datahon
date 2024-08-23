@@ -38,10 +38,7 @@ def interfaz_usuario(modelo):
 
 # Main
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Uso: python prediccion_de_medallas.py [ruta_del_modelo.pkl]")
-        sys.exit(1)
-
+    # Ruta fija del modelo
     ruta_modelo = './modelo_entrenado/olympics_medal_prediction_model.pkl'
 
     # Cargar el modelo entrenado
