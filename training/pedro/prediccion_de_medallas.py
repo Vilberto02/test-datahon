@@ -1,53 +1,56 @@
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import pickle
+import sys
 
-# 1. Cargar los datos
-data = pd.read_csv('ruta/al/archivo/Olympics_2024.csv')
+# 1. Cargar el modelo
+def cargar_modelo(ruta_modelo):
+    with open(ruta_modelo, 'rb') as file:
+        modelo = pickle.load(file)
+    return modelo
 
-# 2. Exploración de los datos
-print(data.info())
-print(data.describe())
-print(data.head())
+def interfaz_usuario(modelo):
+    print("\n--- Bienvenido al Sistema de Predicción de Medallas ---")
+    print("Este sistema le permite predecir el total de medallas que podría ganar un país en los Juegos Olímpicos.")
+    print("Solo necesita ingresar el número de medallas de oro, plata y bronce que espera ganar.\n")
+    
+    while True:
+        try:
+            # Solicitar la entrada del usuario
+            print("Por favor, ingrese el número de medallas de oro, plata y bronce, separadas por comas.")
+            print("Ejemplo: si espera ganar 1 medalla de oro, 4 de plata y 3 de bronce, ingrese: 1,4,3")
+            entrada = input("Ingrese las medallas (oro, plata, bronce): ")
+            
+            # Convertir la entrada en números
+            oro, plata, bronce = map(int, entrada.split(','))
+            
+            # Hacer la predicción usando el modelo
+            prediccion = modelo.predict([[oro, plata, bronce]])
+            
+            # Mostrar el resultado de manera clara
+            print(f"\nPredicción: Con {oro} medalla(s) de oro, {plata} medalla(s) de plata y {bronce} medalla(s) de bronce,")
+            print(f"se espera un total de {int(prediccion[0])} medalla(s).\n")
+        
+        except ValueError:
+            print("\nError: Asegúrese de ingresar tres números separados por comas. Ejemplo: 1,4,3\n")
+        
+        except KeyboardInterrupt:
+            print("\nSaliendo del sistema... ¡Gracias por usar el Sistema de Predicción de Medallas!")
+            sys.exit()
 
-# 3. Limpieza de los datos
-# - Eliminar duplicados, si los hay
-data = data.drop_duplicates()
+# Main
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Uso: python prediccion_de_medallas.py [ruta_del_modelo.pkl]")
+        sys.exit(1)
 
-# - Manejo de valores faltantes (en este caso, no se encontraron valores nulos, pero se puede aplicar la siguiente línea si es necesario)
-# data = data.dropna()
+    ruta_modelo = './modelo_entrenado/olympics_medal_prediction_model.pkl'
 
-# - Corrección de tipos de datos (si es necesario)
-# Ejemplo: data['Rank'] = data['Rank'].astype(int)
+    # Cargar el modelo entrenado
+    try:
+        modelo = cargar_modelo(ruta_modelo)
+        print(f"Modelo cargado desde {ruta_modelo}")
+    except FileNotFoundError:
+        print(f"Archivo de modelo no encontrado en {ruta_modelo}. Asegúrese de que el modelo está entrenado y guardado correctamente.")
+        sys.exit(1)
 
-# 4. Preparación de los datos
-# Selección de características y variable objetivo
-X = data[['Gold', 'Silver', 'Bronze']]
-y = data['Total']
-
-# División en conjuntos de entrenamiento y prueba (80% entrenamiento, 20% prueba)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# 5. Entrenamiento del modelo
-model = LinearRegression()
-model.fit(X_train, y_train)
-
-# 6. Evaluación del modelo
-y_pred = model.predict(X_test)
-mae = mean_absolute_error(y_test, y_pred)
-mse = mean_squared_error(y_test, y_pred)
-rmse = mse ** 0.5
-r2 = r2_score(y_test, y_pred)
-
-print(f'MAE: {mae}')
-print(f'RMSE: {rmse}')
-print(f'R2 Score: {r2}')
-
-# 7. Guardar el modelo entrenado
-with open(b'C:\Users\anycodef\Documents\github\PedroSota\test-datathon\training\pedro\modelo_entrenado\olympics_medal_prediction_model.pkl', 'wb') as file:
-    pickle.dump(model, file)
-
-# Guardar los datos de entrenamiento para su uso posterior
-X_train.to_csv('ruta/al/archivo/olympics_training_data.csv', index=False)
+    # Iniciar la interfaz de usuario
+    interfaz_usuario(modelo)
