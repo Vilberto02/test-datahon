@@ -17,3 +17,7 @@
   text-align: center;
   align-self: center;
 }
+
+.dash__btn:hover {
+  background: rgba(204, 204, 204, 0.5);
+}
