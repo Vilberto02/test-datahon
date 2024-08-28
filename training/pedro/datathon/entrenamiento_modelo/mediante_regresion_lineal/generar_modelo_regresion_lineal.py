@@ -4,7 +4,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, r2_score
 
 # Cargar los datos con las características seleccionadas
-file_path = "../seleccion_caracteristicas_relacionadas/Selected_Features_Gold_Price.csv"
+file_path = "../../seleccion_caracteristicas_relacionadas/Selected_Features_Gold_Price.csv"
 data = pd.read_csv(file_path)
 
 # Definir las características (X) y el objetivo (y)
