@@ -18,7 +18,7 @@ def entrenar_modelo(data):
     model = LinearRegression()
     model.fit(X_train, y_train)
     
-    # Evaluar el modelo
+    # Evaluar el modelod
     y_pred = model.predict(X_test)
     mae = mean_absolute_error(y_test, y_pred)
     rmse = mean_squared_error(y_test, y_pred) ** 0.5
