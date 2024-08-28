@@ -1,26 +1,59 @@
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 
-# Cargar los datos limpios
-file_path = "../limpieza_datos/Gold_Price_Prediction_Cleaned.csv"
+# Cargar los datos
+file_path = "../datos_limpios/gold_price_prediction.csv"
 data = pd.read_csv(file_path)
 
-# Calcular la matriz de correlación
-correlation_matrix = data.corr()
+# Convertir la columna de fechas a formato datetime especificando el formato
+if 'Date' in data.columns:
+    # Ajusta el formato según la estructura de tus fechas, por ejemplo: '%m/%d/%y' para MM/DD/YY
+    data['Date'] = pd.to_datetime(data['Date'], format='%m/%d/%y', errors='coerce')
 
-# Selección de las características con alta correlación con el precio del oro "Price Tomorrow"
-target = 'Price Tomorrow'
-threshold = 0.5  # Umbral de correlación absoluta
-relevant_features = correlation_matrix[target][abs(correlation_matrix[target]) > threshold].index.tolist()
+# Imputar o eliminar valores nulos
+numeric_cols = data.select_dtypes(include=['float64', 'int64']).columns
+categorical_cols = data.select_dtypes(include=['object']).columns
 
-# Filtrar el DataFrame con solo las características relevantes
+# Imputar valores nulos en columnas numéricas con la mediana
+data[numeric_cols] = data[numeric_cols].apply(lambda col: col.fillna(col.median()))
+
+# Convertir cualquier dato categórico que no sea de fecha a su tipo adecuado o imputar valores faltantes
+data[categorical_cols] = data[categorical_cols].apply(lambda col: col.fillna(col.mode()[0]) if col.name != 'Date' else col)
+
+# Tratamiento de outliers: eliminar filas con valores más allá de 3 desviaciones estándar
+for col in numeric_cols:
+    mean = data[col].mean()
+    std = data[col].std()
+    data = data[(data[col] >= mean - 3 * std) & (data[col] <= mean + 3 * std)]
+
+# Seleccionar las características y el objetivo
+relevant_features = [col for col in numeric_cols if col != 'Price Tomorrow'] + ['Price Tomorrow']
 selected_data = data[relevant_features]
 
-# Visualizar las características seleccionadas
-print(f"Características seleccionadas: {relevant_features}")
+# Escalar las características
+scaler = StandardScaler()
+X = selected_data.drop(columns=['Price Tomorrow'])
+y = selected_data['Price Tomorrow']
 
-# Guardar las características seleccionadas en un nuevo archivo CSV
-output_path = "Selected_Features_Gold_Price.csv"
-selected_data.to_csv(output_path, index=False)
-print(f"Los datos con las características seleccionadas se han guardado en: {output_path}")
+X_scaled = scaler.fit_transform(X)
+
+# División en conjuntos de entrenamiento y prueba
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# Guardar los datos tratados
+selected_data.to_csv("Treated_Gold_Price_Data.csv", index=False)
+print("Los datos tratados se han guardado en: Treated_Gold_Price_Data.csv")
+
+# Guardar los conjuntos de entrenamiento y prueba
+train_data = pd.DataFrame(X_train, columns=X.columns)
+train_data['Price Tomorrow'] = y_train.values
+train_data.to_csv("Train_Gold_Price_Data.csv", index=False)
+
+test_data = pd.DataFrame(X_test, columns=X.columns)
+test_data['Price Tomorrow'] = y_test.values
+test_data.to_csv("Test_Gold_Price_Data.csv", index=False)
+
+print("Los conjuntos de entrenamiento y prueba se han guardado en:")
+print("Train_Gold_Price_Data.csv y Test_Gold_Price_Data.csv")
