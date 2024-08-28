@@ -1,21 +1,22 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from sklearn.svm import SVR
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_absolute_error, r2_score
 
-# Cargar los datos con las características seleccionadas
-file_path = "../../seleccion_caracteristicas_relacionadas/Selected_Features_Gold_Price.csv"
-data = pd.read_csv(file_path)
+# Cargar los conjuntos de entrenamiento y prueba
+train_data_path = "../../seleccion_caracteristicas_relacionadas/Train_Gold_Price_Data.csv"
+test_data_path = "../../seleccion_caracteristicas_relacionadas/Test_Gold_Price_Data.csv"
 
-# Definir las características (X) y el objetivo (y)
-X = data.drop(columns=['Price Tomorrow'])
-y = data['Price Tomorrow']
+train_data = pd.read_csv(train_data_path)
+test_data = pd.read_csv(test_data_path)
 
-# Dividir los datos en conjuntos de entrenamiento y prueba (80% entrenamiento, 20% prueba)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Separar las características (X) y el objetivo (y) en los conjuntos de entrenamiento y prueba
+X_train = train_data.drop(columns=['Price Tomorrow'])
+y_train = train_data['Price Tomorrow']
+X_test = test_data.drop(columns=['Price Tomorrow'])
+y_test = test_data['Price Tomorrow']
 
-# Escalar los datos (es esencial para SVR)
+# Escalar los datos ya que SVR es sensible a la escala de las características
 scaler_X = StandardScaler()
 scaler_y = StandardScaler()
 
@@ -23,7 +24,7 @@ X_train_scaled = scaler_X.fit_transform(X_train)
 X_test_scaled = scaler_X.transform(X_test)
 y_train_scaled = scaler_y.fit_transform(y_train.values.reshape(-1, 1)).ravel()
 
-# Inicializar y entrenar el modelo SVR
+# Inicializar y entrenar el modelo de SVR
 model = SVR(kernel='rbf', C=100, gamma=0.1, epsilon=0.1)
 model.fit(X_train_scaled, y_train_scaled)
 
@@ -40,6 +41,6 @@ print(f"R-squared (R²): {r2}")
 
 # Guardar el modelo entrenado si se desea utilizar más adelante
 import joblib
-model_output_path = "Gold_Price_SVR_Model.pkl"
+model_output_path = "SVR_Model.pkl"
 joblib.dump(model, model_output_path)
 print(f"Modelo entrenado guardado en: {model_output_path}")
