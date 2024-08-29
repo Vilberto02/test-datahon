@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import csv
 
-df = pd.read_csv("../../../data/raw/WMT.csv")
+df = pd.read_csv("../../../data/WMT.csv")
 
 # Valores iniciales del csv
 # print(df.head())
