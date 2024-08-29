@@ -31,3 +31,7 @@ Para ejecutar los scripts y notebooks de este proyecto, asegúrate de tener inst
 - `plotly`
 - `joblib`
 - `pickle`
+
+## Nota Importante
+
+Este proyecto está actualmente en desarrollo y no ha sido concluido exitosamente.
